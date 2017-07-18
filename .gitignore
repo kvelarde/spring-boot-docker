@@ -1,0 +1,9 @@
+logs/*
+!.gitkeep
+tmp
+.DS_Store
+.idea
+**/*.iml
+**/target
+**/rebel*.xml
+**/.DS_Store
