@@ -1,0 +1,46 @@
+---
+- job:
+    name: spring_boot_docker_build
+    project-type: pipeline
+    description: 'Spring Boot Docker: Build JOB'
+    disabled: false
+    display-name: 'Spring Boot: Build JOB'
+    parameters:
+      - string:
+          name: TAG
+          default: '0.1'
+          description: 'Tag to deploy to registry'
+      - string:
+          name: REGISTRY
+          default: 'registry.torpedo.red:5000'
+          description: 'Docker Registry (REQUIRED).'
+    logrotate:
+      daysToKeep: 10
+      numToKeep: 50
+    dsl: |
+          import hudson.EnvVars
+          try {
+          node {
+            stage 'checkout code'
+              println "\u2600 checking out code"
+              git branch: 'master', url: 'https://github.com/vinothrm/spring-boot-docker.git'
+            stage 'Unit Test Code'
+              println 'Unit testing'
+            stage 'Build Docker File'
+              sh 'docker build -t hello-world-boot .'
+            stage 'Tag Image'
+              println "\u2600 Tag Image"
+              sh "docker tag hello-world-boot:latest ${REGISTRY}/hello-world-boot:${TAG}"
+            stage 'Push Image'
+              println "Pushing docker image to ${REGISTRY}"
+              sh "docker push ${REGISTRY}/hello-world-boot:${TAG}"
+              sh 'sleep 10'
+          } // end node
+          } // end try
+          catch (exc) {
+            String recipient = 'infra@lists.kurtisvelarde.com'
+            mail subject: "${env.JOB_NAME} (${env.BUILD_NUMBER}) failed",
+              body: "It appears that ${env.BUILD_URL} is failing",
+              to: recipient,
+              from: 'build@kurtisvelarde.com'
+          }
