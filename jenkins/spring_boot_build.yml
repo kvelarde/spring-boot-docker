@@ -24,9 +24,7 @@
             stage 'checkout code'
               println "\u2600 checking out code"
               git branch: 'master', url: 'https://github.com/vinothrm/spring-boot-docker.git'
-            stage 'Unit Test Code'
-              println 'Unit testing'
-            stage 'Build Docker File'
+            stage 'Unit Test / Build Docker File'
               sh 'docker build -t hello-world-boot .'
             stage 'Tag Image'
               println "\u2600 Tag Image"
@@ -34,7 +32,9 @@
             stage 'Push Image'
               println "Pushing docker image to ${REGISTRY}"
               sh "docker push ${REGISTRY}/hello-world-boot:${TAG}"
-              sh 'sleep 10'
+            stage 'Clean Up'
+              println 'Cleaning Up Local Image'
+              sh 'docker rmi ${REGISTRY}/hello-world-boot:${TAG}'
           } // end node
           } // end try
           catch (exc) {
